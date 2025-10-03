@@ -2,8 +2,8 @@ name: Data Pipeline
 
 on:
   schedule:
-    - cron: "0 6 * * *"   # Run every day at 6 AM UTC
-  workflow_dispatch:        # Manual trigger
+    - cron: "0 6 * * *"
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -11,9 +11,7 @@ permissions:
 jobs:
   run-pipeline:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: .
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -25,17 +23,19 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install pandas
-          pip install yfinance
+          cd my-pipeline
+          pip install -r requirements.txt
 
-         
       - name: Run pipeline script
-        run: python pipeline.py
+        run: |
+          cd my-pipeline
+          python pipeline.py
 
       - name: Commit and push results
         run: |
+          cd my-pipeline
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add results.csv clean_data.csv raw_data.csv
+          git add results.csv clean_data.csv raw_data.csv || true
           git commit -m "Update results from pipeline run [skip ci]" || echo "No changes to commit"
           git push
